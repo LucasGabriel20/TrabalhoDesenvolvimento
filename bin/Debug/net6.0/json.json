@@ -1,0 +1,18 @@
+[
+  {
+    "Adquirente": "Adquirente A",
+    "Taxas": [
+      {
+      "Bandeira":"Visa",
+      "Credito":2.25,
+      "Debito":2.00
+      },
+
+      {
+       "Bandeira": "Master",
+       "Credito": 2.35,
+       "Debito": 1.98
+      }
+    ]
+  }
+]
