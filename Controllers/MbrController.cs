@@ -52,7 +52,7 @@ namespace DesafioDesenvolvimento.Controllers
         public List<Taxa> teste2 = new List<Taxa>();
         public List<Taxa> teste3 = new List<Taxa>();
         public List<Cartao> adquirentes = new List<Cartao>();
-        public double valorLiquido ;
+        public double valorLiquido;
 
         private readonly ILogger<MdrController> _logger;
 
@@ -66,22 +66,22 @@ namespace DesafioDesenvolvimento.Controllers
             teste2.Add(new Taxa("Master", 2.65M, 1.75M));
             teste3.Add(new Taxa("Visa", 2.75M, 2.16M));
             teste3.Add(new Taxa("Master", 3.10M, 1.58M));
-            
+
 
             adquirentes.Add(new Cartao(
                 "Adquirente A",
                 teste
             ));
-                adquirentes.Add(new Cartao(
-                "Adquirente B",
-                teste2
-            ));
+            adquirentes.Add(new Cartao(
+            "Adquirente B",
+            teste2
+        ));
             adquirentes.Add(new Cartao(
                 "Adquirente C",
                 teste3
             ));
         }
-        
+
 
 
         [HttpGet()]
@@ -95,49 +95,37 @@ namespace DesafioDesenvolvimento.Controllers
         }
         [HttpPost("/transaction")]
 
-        public IActionResult Post(String Adquirente,string Bandeira, String Tipo, Decimal Valor )
+        public IActionResult Post(String Adquirente, string Bandeira, String Tipo, Decimal Valor)
         {
             var bandeiraMaiusculo = Bandeira.ToUpper();
-            //var tipoMaiusculo = Tipo.ToUpper();
+            var adqMaiusculo = Adquirente.ToUpper();
 
-            var adq =
-            adquirentes.Where(
+            try
+            {
+                var adq =
+                adquirentes.Where(
+                    x => x.Adquirente.Equals("Adquirente " + adqMaiusculo)
+                    ).FirstOrDefault();
+                var band = adq.Taxas.Where(
+                    y => y.Bandeira.ToUpper().Equals(bandeiraMaiusculo)
+                    ).FirstOrDefault();
 
-                x => x.Adquirente.Equals("Adquirente " +Adquirente)
-                ).FirstOrDefault();
 
-            var band = adq.Taxas.Where(
-                y => y.Bandeira.ToUpper().Equals(bandeiraMaiusculo)
-                ).FirstOrDefault();
+                var taxa = Tipo.ToUpper().Equals("DEBITO") ? band.Debito : band.Credito;
 
-            var taxa = Tipo.ToUpper().Equals("DEBITO") ? band.Debito : band.Credito;
+                Retorno solucao = new Retorno(Valor - (Valor * taxa / 100));
 
-            Retorno solucao = new Retorno(Valor - (Valor * taxa / 100));
+                string json = JsonConvert.SerializeObject(solucao, Formatting.Indented,
+                            new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }); ;
 
-            string json = JsonConvert.SerializeObject(solucao, Formatting.Indented,
-                        new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }); ;
-
-            /*var teste = adquirentes;
-            if (adquirentes == teste ) {
-                var percent = 2.25;
-                valorLiquido = Valor - (Valor * percent / 100);
+                return Ok(json);
             }
-            else { }*/
+            catch (Exception)
+            {
+                return BadRequest("Somente Adquirentes A ,B ou C , Bandeira Visa ou Master , Tipo Credito ou Debito");
+            }
 
-            
-            return Ok( json);
+
         }
-
-        
-
-        private bool IsNumeric(string strNumber)
-        {
-            double number;
-            bool isNumber = double.TryParse(strNumber, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo,
-                out number);
-            return isNumber;
-        }
-        
-       
     }
 }
